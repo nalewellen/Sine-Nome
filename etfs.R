@@ -32,7 +32,6 @@ file_df <- as.data.frame(etf_file$`NULL`)%>%
             group_by(Launch)%>%
             unnest_tokens(word, Fund)%>%
             count(word, sort = TRUE)    
-    
 
 
 # Example Filing
