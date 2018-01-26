@@ -10,14 +10,53 @@ etf_registration <- "http://www.etf.com/etf-watch-tables/etfs-registration"
 reg_table <- XML::readHTMLTable(etf_registration, header = TRUE, 
                                 stringsAsFactors = FALSE)
 
-reg_df <- as.data.frame(reg_table$`NULL`)%>%
+# Word Count
+
+word_count <- as.data.frame(reg_table$`NULL`)%>%
             filter(Fund != "")%>%
             mutate_all(.funs = function(x) replace(x, which(x == "N/A" | x == ""), NA))%>%
             unnest_tokens(word, Fund)%>%
-            count(word, sort = TRUE)    
+            count(word, sort = TRUE)%>%
+            mutate(date = Sys.Date())
 
+# write_csv(word_count, "Registration Word Counts.csv")
 
-write_csv(reg_df, "Registration Word Counts.csv")
+# 2 Word Combinations
+
+bigram_count <- as.data.frame(reg_table$`NULL`)%>%
+            filter(Fund != "")%>%
+            mutate_all(.funs = function(x) replace(x, which(x == "N/A" | x == ""), NA))%>%
+            unnest_tokens(bigram, Fund, token = "ngrams", n = 2)%>%
+            count(bigram, sort = TRUE)%>%
+            mutate(date = Sys.Date())
+
+# write_csv(bigram_count, "Bigram Word Counts.csv")
+
+# Bar Charts 
+    
+word_chart <- word_count %>%
+            filter(n >= 35)%>%
+            mutate(word = reorder(word, n)) %>%
+            ggplot(aes(word, n))+
+                geom_col(fill = "steel blue")+
+                xlab(" ")+
+                coord_flip()+
+                ggtitle("Single Word Counts for Registered ETFs")+
+                theme(plot.title = element_text(hjust = 0.5), axis.title.x=element_blank())
+
+ggsave("WordCountChart.png")
+
+bigram_chart <- bigram_count %>%
+            filter(n >= 32)%>%
+            mutate(bigram = reorder(bigram, n)) %>%
+            ggplot(aes(bigram, n))+
+                geom_col(fill = "steel blue")+
+                xlab(" ")+
+                coord_flip()+
+                ggtitle("Two Word Combinations for Registered ETFs")+
+                theme(plot.title = element_text(hjust = 0.5), axis.title.x=element_blank())
+
+ggsave("BigramChart.png")
 
 # ETF Filing Clean DF
 
@@ -53,7 +92,7 @@ bigram_text <- filing%>%
                 as.tibble()%>%
                 unnest_tokens(word, value)
 
-write_csv(file_text, "Example ETF Filing.csv")
+#write_csv(file_text, "Example ETF Filing.csv")
 
 
 
