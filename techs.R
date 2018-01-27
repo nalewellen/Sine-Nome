@@ -17,13 +17,13 @@ stock_call <- function(x){
 
 # List of stock tickers -- to be appended by AM
 
-ticks <- c("OZRK", "IBM")
+ticks <- c("SLB")
 
 # Create a dataframe from the list of tickers and stock_call
 
 stock_data <- as.data.frame(do.call(rbind,(lapply(ticks, stock_call))))
 
-# Make RS and RS_14
+# Make RS, RS_14 and BUY/SELL Indicator
 
 stock_data <- stock_data%>%
                 group_by(Ticker)%>%
@@ -32,5 +32,7 @@ stock_data <- stock_data%>%
                        Loss = if_else(Change <= 0, abs(Change), 0), 
                        Avg_Gain = rollapply(Gain, 14, mean, align='right',fill=NA),
                        Avg_Loss = rollapply(Loss, 14, mean, align='right',fill=NA),
-                       RS = (Avg_Gain / Avg_Loss), RS_14 = if_else(Avg_Loss == 100, 100, 100 - (100 / (1 + RS))))
- 
+                       RS = (Avg_Gain / Avg_Loss), RS_14 = if_else(Avg_Loss == 100, 100, 100 - (100 / (1 + RS))),
+                       signal = if_else(((RS_14 < 30 & lag(RS_14) > 50) | (RS_14 < 20 & lag(RS_14) > 40)), "BUY",
+                                if_else(((RS_14 > 70 & lag(RS_14) < 50) | (RS_14 > 80 & lag(RS_14) < 60)), "SELL",
+                                                "")))
