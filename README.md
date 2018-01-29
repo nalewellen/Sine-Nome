@@ -1,6 +1,6 @@
 # Sine-Nome
 
-## ETFS
+## ETFs
 
 This file contains the R code for ETF registration and ETF filing word count analysis. 
 
