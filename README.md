@@ -13,3 +13,7 @@ Outstanding items:
 ## Technicals
 
 This file contains the R code for stock data and technical indicators.
+
+### RSI
+
+Relative Strength Index (RSI) is calculated in the techs.r file. That file also includes a Buy/Sell signal. 
