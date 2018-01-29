@@ -65,7 +65,43 @@ etf_file <- "http://www.etf.com/etf-watch-tables/etf-launches"
 etf_file <- XML::readHTMLTable(etf_file, header = TRUE, 
                                 stringsAsFactors = FALSE)
 
+
 file_df <- as.data.frame(etf_file$`NULL`)%>%
+            filter(Fund != "")%>%
+            mutate_all(.funs = function(x) replace(x, which(x == "N/A" | x == ""), NA))
+
+# This function returns a list of newly filed ETFs
+# This list will be used to loop through the holdings in the next section. 
+
+
+etf_file_tickers <- function(){
+    
+    etf_file <- "http://www.etf.com/etf-watch-tables/etf-launches"
+    
+    etf_file <- XML::readHTMLTable(etf_file, header = TRUE, 
+                                   stringsAsFactors = FALSE)
+    
+    
+    file_df <- as.data.frame(etf_file$`NULL`)%>%
+        filter(Fund != "")%>%
+        mutate_all(.funs = function(x) replace(x, which(x == "N/A" | x == ""), NA))
+    
+    tickers <- as.list(file_df$Ticker)
+    
+}
+
+tickers <- etf_file_tickers()
+
+# Newly filed ETF holdings
+
+holds <- paste0("https://research2.fidelity.com/fidelity/screeners/etf/etfholdings.asp?symbol=",tickers
+                ,"&view=Holdings")
+
+
+
+# New Filing Word Counts
+
+file_counts <- as.data.frame(etf_file$`NULL`)%>%
             filter(Fund != "")%>%
             mutate_all(.funs = function(x) replace(x, which(x == "N/A" | x == ""), NA))%>%
             group_by(Launch)%>%
@@ -74,6 +110,8 @@ file_df <- as.data.frame(etf_file$`NULL`)%>%
 
 
 # Example Filing
+# Similar code will be used for 10-Ks and for Earnings Calls
+# Move this to another R program
 
 filing <- "https://www.sec.gov/Archives/edgar/data/1415726/000160900615000184/academy485a10162015.htm"
 
