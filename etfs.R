@@ -92,12 +92,42 @@ etf_file_tickers <- function(){
 
 tickers <- etf_file_tickers()
 
-# Newly filed ETF holdings
 
-holds <- paste0("https://research2.fidelity.com/fidelity/screeners/etf/etfholdings.asp?symbol=",tickers
-                ,"&view=Holdings")
+# Newly filed ETF top 10 holdings
+
+test <- "FNCL"
+
+# This function pulls an ETFs top 10 holdings
+
+top_holdings <- function(ticker){
+
+holds <- paste0("https://screener.fidelity.com/ftgw/etf/goto/snapshot/portfolioComposition.jhtml?symbols=",ticker)
+
+holds <- read_html(holds)%>%
+            html_node("table.holdings-datatable")%>%
+            html_table()%>%
+            slice(2:n())%>%
+            rename(Ticker = X1 , Stock = X2, Percent = X3)
+
+return(holds)
+
+}
+
+example <- top_holdings(test)
 
 
+# Top holdings by newly filed tickers
+
+top_holds <- as.data.frame(" ")
+
+top_holds <- for (i in tickers){
+    
+    x <- top_holdings(i)%>%
+            mutate(ETF = i)
+    
+    top_holds <- bind_rows(x)
+    
+}
 
 # New Filing Word Counts
 
@@ -131,13 +161,3 @@ bigram_text <- filing%>%
                 unnest_tokens(word, value)
 
 #write_csv(file_text, "Example ETF Filing.csv")
-
-
-
-
-
-
-
-
-
-
