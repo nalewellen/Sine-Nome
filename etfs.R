@@ -95,39 +95,45 @@ tickers <- etf_file_tickers()
 
 # Newly filed ETF top 10 holdings
 
-test <- "FNCL"
+test <- "HNDL"
 
 # This function pulls an ETFs top 10 holdings
 
 top_holdings <- function(ticker){
 
-holds <- paste0("https://screener.fidelity.com/ftgw/etf/goto/snapshot/portfolioComposition.jhtml?symbols=",ticker)
+holds <- paste0("http://etfdb.com/etf/",ticker,"/#etf-holdings&sort_name=weight&sort_order=desc&page=1")
 
-holds <- read_html(holds)%>%
-            html_node("table.holdings-datatable")%>%
+table <- read_html(holds)%>%
+            html_node("#etf-holdings")%>%
             html_table()%>%
-            slice(2:n())%>%
-            rename(Ticker = X1 , Stock = X2, Percent = X3)
+            slice(2:n()-1)%>%
+            mutate(Ticker = ticker, Date = Sys.Date())
 
-return(holds)
+return(table)
 
 }
 
 example <- top_holdings(test)
 
-
 # Top holdings by newly filed tickers
 
-top_holds <- as.data.frame(" ")
+top_holds <- list()
 
 top_holds <- for (i in tickers){
     
-    x <- top_holdings(i)%>%
-            mutate(ETF = i)
+    error_check <- tryCatch(
+            x <- top_holdings(i),
+            error = function(e) e)
     
-    top_holds <- bind_rows(x)
+    if(inherits(error_check, "error")){
+        next  
+    } 
+    
+    top_holds[[i]] <- top_holdings(i)
     
 }
+
+top_holds_table <- bind_rows(top_holds)
 
 # New Filing Word Counts
 
