@@ -73,7 +73,6 @@ file_df <- as.data.frame(etf_file$`NULL`)%>%
 # This function returns a list of newly filed ETFs
 # This list will be used to loop through the holdings in the next section. 
 
-
 etf_file_tickers <- function(){
     
     etf_file <- "http://www.etf.com/etf-watch-tables/etf-launches"
@@ -119,19 +118,25 @@ example <- top_holdings(test)
 
 top_holds <- list()
 
-top_holds <- for (i in tickers){
+
+
+for (i in tickers){
     
     error_check <- tryCatch(
-            x <- top_holdings(i),
-            error = function(e) e)
-    
+        top_holdings(i),
+        error = function(e) e)
     if(inherits(error_check, "error")){
-        next  
-    } 
-    
-    top_holds[[i]] <- top_holdings(i)
-    
+        Sys.sleep(1)
+        next 
+    } else {
+        x <- top_holdings(i)
+        top_holds[[i]] <- x
+        Sys.sleep(1)
+        browser()
+    }
 }
+
+# write_csv(top_holds_table, "Stock Holdings by Filed ETFs.csv")
 
 top_holds_table <- bind_rows(top_holds)
 
