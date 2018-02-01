@@ -18,6 +18,8 @@ This file contains the R code for stock data and technical indicators.
 
 Relative Strength Index (RSI) is calculated in the techs.r file. That file also includes a Buy/Sell signal. 
 
+* The Buy / Sell indicator needs a little work after additional updates. 
+
 ## Database
 
 This pushes the R dataframes to a local DB to store and archive unstructured data. 
