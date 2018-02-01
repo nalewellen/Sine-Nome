@@ -2,6 +2,7 @@ library(tidyverse)
 library(tidytext)
 library(XML)
 library(rvest)
+source("functions.R")
 
 # ETF Registration Clean DF
 
@@ -32,32 +33,6 @@ bigram_count <- as.data.frame(reg_table$`NULL`)%>%
 
 # write_csv(bigram_count, "Bigram Word Counts.csv")
 
-# Bar Charts 
-    
-word_chart <- word_count %>%
-            filter(n >= 35)%>%
-            mutate(word = reorder(word, n)) %>%
-            ggplot(aes(word, n))+
-                geom_col(fill = "steel blue")+
-                xlab(" ")+
-                coord_flip()+
-                ggtitle("Single Word Counts for Registered ETFs")+
-                theme(plot.title = element_text(hjust = 0.5), axis.title.x=element_blank())
-
-ggsave("WordCountChart.png")
-
-bigram_chart <- bigram_count %>%
-            filter(n >= 32)%>%
-            mutate(bigram = reorder(bigram, n)) %>%
-            ggplot(aes(bigram, n))+
-                geom_col(fill = "steel blue")+
-                xlab(" ")+
-                coord_flip()+
-                ggtitle("Two Word Combinations for Registered ETFs")+
-                theme(plot.title = element_text(hjust = 0.5), axis.title.x=element_blank())
-
-ggsave("BigramChart.png")
-
 # ETF Filing Clean DF
 
 etf_file <- "http://www.etf.com/etf-watch-tables/etf-launches"
@@ -70,27 +45,9 @@ file_df <- as.data.frame(etf_file$`NULL`)%>%
             filter(Fund != "")%>%
             mutate_all(.funs = function(x) replace(x, which(x == "N/A" | x == ""), NA))
 
-# This function returns a list of newly filed ETFs
-# This list will be used to loop through the holdings in the next section. 
-
-etf_file_tickers <- function(){
-    
-    etf_file <- "http://www.etf.com/etf-watch-tables/etf-launches"
-    
-    etf_file <- XML::readHTMLTable(etf_file, header = TRUE, 
-                                   stringsAsFactors = FALSE)
-    
-    
-    file_df <- as.data.frame(etf_file$`NULL`)%>%
-        filter(Fund != "")%>%
-        mutate_all(.funs = function(x) replace(x, which(x == "N/A" | x == ""), NA))
-    
-    tickers <- as.list(file_df$Ticker)
-    
-}
+# List of tickers
 
 tickers <- etf_file_tickers()
-
 
 # Newly filed ETF top 10 holdings
 
@@ -98,37 +55,28 @@ test <- "HNDL"
 
 # This function pulls an ETFs top 10 holdings
 
-top_holdings <- function(ticker){
-
-holds <- paste0("http://etfdb.com/etf/",ticker,"/#etf-holdings&sort_name=weight&sort_order=desc&page=1")
-
-table <- read_html(holds)%>%
-            html_node("#etf-holdings")%>%
-            html_table()%>%
-            slice(2:n()-1)%>%
-            mutate(Ticker = ticker, Date = Sys.Date())
-
-return(table)
-
-}
-
 example <- top_holdings(test)
 
 # Top holdings by newly filed tickers
 
 top_holds <- list()
 
-
+# This loop will bring back a list of the ticker's top stock holdings
 
 for (i in tickers){
     
     error_check <- tryCatch(
+        
         top_holdings(i),
         error = function(e) e)
+    
     if(inherits(error_check, "error")){
+        
         Sys.sleep(1)
-        next 
+        next
+        
     } else {
+        
         x <- top_holdings(i)
         top_holds[[i]] <- x
         Sys.sleep(1)

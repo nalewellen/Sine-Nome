@@ -37,3 +37,13 @@ top_holdings <- function(ticker){
     
 }
 
+# This function calls an API for data and cleans the data
+
+stock_call <- function(stock_ticker){
+    df <- as_tibble(getSymbols(stock_ticker, env = NULL))%>%
+        rownames_to_column()%>%
+        magrittr::set_colnames(c("Date","Open", "High", "Low", "Close", "Volume", "Adjusted"))%>%
+        mutate(Ticker = stock_ticker)
+    
+    return(df)
+}
