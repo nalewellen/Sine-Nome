@@ -34,29 +34,29 @@ stock_data <- as.data.frame(do.call(rbind,(lapply(ticks, stock_call))))%>%
                 Avg_Loss = rollapply(Loss, 14, mean, align='right',fill=NA),
                 RS = (Avg_Gain / Avg_Loss), RS_14 = if_else(Avg_Loss == 100, 100, 100 - (100 / (1 + RS))),
                 Signal = if_else(((RS_14 < 20 & lag(RS_14) > 20 & lag(RS_14, k = 2) > 25 & 
-                                       Volume > 2 * rollapply(Volume, 4, mean, aligh = 'right', fill=NA) &
+                                       Volume > 2 * lag(rollmean(x = Volume, 4, align = "right", fill = NA)) &
                                        Close / lag(Close) < 1 & Close / lag(Close) < lag(Close) / lag(Close, k = 2))  
                                   
                                     | (RS_14 < 30 & lag(RS_14) > 30 & lag(RS_14, k = 2) > 35 & 
-                                        Volume > 2 * rollapply(Volume, 4, mean, aligh = 'right', fill=NA) &
-                                        Close / lag(Close) < 1 & Close / lag(Close) < lag(Close) / lag(Close, k = 2))
+                                        Volume > 2 * lag(rollmean(x = Volume, 4, align = "right", fill = NA)) &
+                                        Close / lag(Close) < 1 & (Close / lag(Close)) < (lag(Close) / lag(Close, k = 2)))
                                   
                                     | (RS_14 < 50 & lag(RS_14) > 50 & lag(RS_14, k = 2) > 55 & 
-                                        Volume > 2 * rollapply(Volume, 4, mean, aligh = 'right', fill=NA) &
+                                        Volume > 2 * lag(rollmean(x = Volume, 4, align = "right", fill = NA)) &
                                         Close / lag(Close) < 1 & Close / lag(Close) < lag(Close) / lag(Close, k = 2))), 
                                     
                                     "BUY",
                                  
                         if_else(((RS_14 > 80 & lag(RS_14) < 80 & lag(RS_14, k = 2) < 75 &
-                                        Volume > 2 * rollapply(Volume, 4, mean, aligh = 'right', fill=NA) &
+                                        Volume > 2 * lag(rollmean(x = Volume, 4, align = "right", fill = NA)) &
                                         Close / lag(Close) > 1 & Close / lag(Close) > lag(Close) / lag(Close, k = 2))
                                  
                                     | (RS_14 > 70 & lag(RS_14) < 70 & lag(RS_14, k = 2) < 65 &
-                                        Volume > 2 * rollapply(Volume, 4, mean, aligh = 'right', fill=NA) &
+                                        Volume > 2 * lag(rollmean(x = Volume, 4, align = "right", fill = NA)) &
                                         Close / lag(Close) > 1 & Close / lag(Close) > lag(Close) / lag(Close, k = 2))
                         
                                     | (RS_14 > 50 & lag(RS_14) < 50 & lag(RS_14, k = 2) < 45 &
-                                        Volume > 2 * rollapply(Volume, 4, mean, aligh = 'right', fill=NA) &
+                                        Volume > 2 * lag(rollmean(x = Volume, 4, align = "right", fill = NA)) &
                                         Close / lag(Close) > 1 & Close / lag(Close) > lag(Close) / lag(Close, k = 2))),
                                 
                                     "SELL", ""))
